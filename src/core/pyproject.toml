@@ -1,0 +1,19 @@
+[project]
+name = "core"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "tremgan", email = "tregan.remi@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "sqlmodel>=0.0.37",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
