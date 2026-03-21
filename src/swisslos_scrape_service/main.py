@@ -1,11 +1,10 @@
-import requests
+from playwright.sync_api import Playwright, sync_playwright
 from datetime import datetime
 from pathlib import Path
-import time
 import logging
-from rich import print
-
-from config import DB_SERVICE_URL
+import json
+import zlib
+import time
 
 from core.models import MatchCreate, SportsBettingOddsCreate
 
@@ -17,75 +16,180 @@ logging.basicConfig(
 )
 logger = logging.getLogger(Path(__file__).name)
 
+BOOKMAKER = 'swisslos'
+SELECTION_TYPE_MAP = {
+    'asw:selectiontype:1': 'home',
+    'asw:selectiontype:2': 'draw',
+    'asw:selectiontype:3': 'away',
+}
 
-def get_sports_bets() -> tuple[list[SportsBettingOddsCreate], list[MatchCreate]]:
 
-    lotterie_football_url = 'https://jeux.loro.ch/api/sport/sports/FOOT/events'
-    headers = {'accept-language': 'de-CH'}
+def decode_binary_payload(payload: bytes) -> dict | None:
+    try:
+        decompressed = zlib.decompress(payload, wbits=-15)
+        return json.loads(decompressed.decode('utf-8'))
+    except Exception as e:
+        logger.warning(f'failed to decode payload: {e}')
+        return None
 
-    response = requests.get(lotterie_football_url, headers=headers)
-    if response.status_code != 200:
-        logger.critical(f'request failed with status {response.status_code}')
-        return [], []
 
-    event_paths = response.json()['eventPaths']
+def collect_messages() -> list[dict]:
+    messages = []
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        context = browser.new_context()
+        page = context.new_page()
+
+        def on_websocket(ws):
+            logger.info(f'websocket opened: {ws.url}')
+
+            def on_frame(payload: bytes):
+                message = decode_binary_payload(payload)
+                if message:
+                    messages.append(message)
+
+            ws.on('framereceived', on_frame)
+            ws.on('close', lambda _: logger.info('websocket closed'))
+
+        page.on('websocket', on_websocket)
+        page.goto('https://www.swisslos.ch/de/sporttip/sportwetten/fussball')
+        time.sleep(10)
+        page.close()
+        browser.close()
+
+    logger.info(f'collected {len(messages)} websocket messages')
+    return messages
+
+
+def parse_messages(messages: list[dict]) -> tuple[list[MatchCreate], list[SportsBettingOddsCreate]]:
+    competitors = {}
+    selections = {}
+    markets = {}
     events = []
-    for event_path in event_paths:
-        events += event_path['events']
 
+    for msg in messages:
+        payload = msg.get('payload', [])
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except Exception:
+                continue
 
-    sports_bets = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            body = item.get('body', {})
+            if not isinstance(body, dict):
+                continue
+            entities = body.get('snapshotUpdate', {}).get('snapshotUpdateItems', [])
+            for e in entities:
+                if not isinstance(e, dict):
+                    continue
+                t = e.get('type')
+                entity = e.get('entity', {})
+                urn = entity.get('urn')
+
+                if t == 'Competitor':
+                    competitors[urn] = entity.get('name')
+                elif t == 'Selection':
+                    selections[urn] = {
+                        'type': entity.get('type'),
+                        'odds': entity.get('odds'),
+                    }
+                elif t == 'Market':
+                    markets[urn] = {
+                        'type': entity.get('type'),
+                        'selections': entity.get('selections', []),
+                    }
+                elif t == 'Event':
+                    events.append(entity)
+
+    print(f'{len(competitors)=} {len(selections)=} {len(markets)=} {len(events)=}')
+
     matches = []
+    odds_list = []
 
-    for event_json in events:
-        if event_json['eType'] == 'R':
+    for event in events:
+        competitors_refs = event.get('eventCompetitors', [])
+        if len(competitors_refs) != 2:
             continue
 
-        match_datetime = datetime.fromisoformat(event_json['startDateTime'])
+        team1 = competitors.get(competitors_refs[0]['competitor'])
+        team2 = competitors.get(competitors_refs[1]['competitor'])
+        if not team1 or not team2:
+            continue
 
-        team1, team2 = event_json['description'].split(' vs ')
+        match_label = f'{team1} vs {team2}'
+        match_datetime = datetime.fromisoformat(event['startTime'].replace('Z', '+00:00'))
+        event_id = int(event['urn'].split(':')[-1])
 
-        outcomes = {outcome['opponent']: float(outcome['price']) for outcome in event_json['markets'][0]['outcomes']}
+        market_1x2 = None
+        for market_urn in event.get('markets', []):
+            market = markets.get(market_urn)
+            if market and market['type'] == 'asw:markettype:1':
+                market_1x2 = market
+                break
 
-        sports_bet = SportsBettingOddsCreate(
-            bookmaker='Swisslos',
-            bookmaker_event_id=event_json['id'],
-            team1_odds=outcomes[team1],
-            team2_odds=outcomes[team2],
-            draw_odds=outcomes.get('X'),  # returns None if not present
-        )
-        sports_bets.append(sports_bet)
+        if not market_1x2:
+            continue
 
-        matches.append(
-            MatchCreate(
-                bookmaker_event_id=event_json['id'],
-                match_label=event_json['description'],
-                match_datetime=match_datetime,
-                team1=team1,
-                team2=team2
-            )
-        )
+        odds_by_type = {}
+        for sel_urn in market_1x2['selections']:
+            sel = selections.get(sel_urn)
+            if sel:
+                role = SELECTION_TYPE_MAP.get(sel['type'])
+                if role:
+                    odds_by_type[role] = sel['odds']
 
-    return sports_bets, matches
+        if 'home' not in odds_by_type or 'away' not in odds_by_type:
+            continue
+
+        matches.append(MatchCreate(
+            bookmaker=BOOKMAKER,
+            bookmaker_event_id=event_id,
+            match_label=match_label,
+            match_datetime=match_datetime,
+            team1=team1,
+            team2=team2,
+        ))
+
+        odds_list.append(SportsBettingOddsCreate(
+            bookmaker=BOOKMAKER,
+            bookmaker_event_id=event_id,
+            team1_odds=odds_by_type['home'],
+            team2_odds=odds_by_type['away'],
+            draw_odds=odds_by_type.get('draw'),
+        ))
+
+    return matches, odds_list
 
 
 if __name__ == '__main__':
+    import requests
+    from config import DB_SERVICE_URL
+
     try:
         t0 = time.perf_counter()
-        sports_bets, matches = get_sports_bets()
+        messages = collect_messages()
+        matches, odds_list = parse_messages(messages)
         t1 = time.perf_counter()
-        print(sports_bets[:50])
-        logger.info(f'scraped {len(sports_bets)} sports bets in {t1-t0:.2f}s')
 
-        for sports_bet in sports_bets:
-            
-            print(f'posting {sports_bet} to db_service')
-            requests.post(f'{DB_SERVICE_URL}/sports_betting_odds/', json=sports_bet.model_dump(mode='json'))
+        logger.info(f'scraped {len(matches)} matches in {t1-t0:.2f}s')
 
-        for match in matches:
-            print(f'posting {match} to db_service')
-            requests.post(f'{DB_SERVICE_URL}/matches/', json=match.model_dump(mode='json'))
+        for match, odds in zip(matches, odds_list):
+            match_response = requests.post(
+                f'{DB_SERVICE_URL}/matches/',
+                json=match.model_dump(mode='json')
+            )
+       
+            requests.post(
+                f'{DB_SERVICE_URL}/sports_betting_odds/',
+                json=odds.model_dump(mode='json')
+            )
+
+        logger.info(f'posted {len(matches)} matches and odds to db_service')
 
     except Exception as e:
-        print(e)
         logger.exception('scrape error')
+        raise

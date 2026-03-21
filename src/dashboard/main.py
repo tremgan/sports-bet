@@ -18,7 +18,7 @@ if not odds:
     st.info("No odds scraped yet.")
 else:
     df = pd.DataFrame(odds[-50:])
-    df = df[["timestamp", "bookmaker", "bookmaker_event_id", "team1_odds", "draw_odds", "team2_odds"]]
+    df = df[["timestamp", "bookmaker", "team1_odds", "draw_odds", "team2_odds"]]
     df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.strftime("%Y-%m-%d %H:%M")
     st.dataframe(df, use_container_width=True)
 

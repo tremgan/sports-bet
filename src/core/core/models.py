@@ -9,7 +9,7 @@ from sqlalchemy import UniqueConstraint
 
 
 class MatchBase(SQLModel):
-    __table_args__ = (UniqueConstraint("bookmaker_event_id"),)
+    bookmaker: str
     bookmaker_event_id: int # this is the unique id from the bookmaker, we can use it to link matches and odds together
     match_label: str
     match_datetime: datetime
@@ -17,6 +17,7 @@ class MatchBase(SQLModel):
     team2: str
 
 class Match(MatchBase, table=True):
+    __table_args__ = (UniqueConstraint("bookmaker_event_id", "bookmaker"),)
     id: Optional[int] = Field(default=None, primary_key=True)
     sports_betting_odds: list["SportsBettingOdds"] = Relationship(back_populates="match")
 
