@@ -13,8 +13,8 @@ class MatchBase(SQLModel):
     team2: str
     
 class Match(MatchBase, table=True):
+    __table_args__ = (UniqueConstraint("match_label", "match_datetime"),)
     id: Optional[int] = Field(default=None, primary_key=True)
-    matching_attempts: int = Field(default=0, index=True)
 
     
     bookmaker_matches: list["BookmakerMatch"] = Relationship(back_populates="match")
@@ -32,6 +32,8 @@ class BookmakerMatch(BookmakerMatchBase, table=True):
     __table_args__ = (UniqueConstraint("bookmaker", "match_label", "match_datetime"),)
   
     id: Optional[int] = Field(default=None, primary_key=True)
+    matching_attempts: int = Field(default=0, index=True)
+
     
     sports_betting_odds: list["SportsBettingOdds"] = Relationship(back_populates="bookmaker_match")
 
