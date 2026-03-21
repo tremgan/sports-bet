@@ -11,9 +11,11 @@ class MatchBase(SQLModel):
     match_datetime: datetime
     team1: str
     team2: str
-
+    
 class Match(MatchBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    matching_attempts: int = Field(default=0, index=True)
+
     
     bookmaker_matches: list["BookmakerMatch"] = Relationship(back_populates="match")
 

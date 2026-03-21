@@ -3,6 +3,7 @@ from core.models import BookmakerMatch, BookmakerMatchCreate ,SportsBettingOdds
 from sqlmodel import SQLModel, Session, select
 from config import engine
 import logging
+from sqlalchemy.exc import IntegrityError
 
 from logger import logger
 from core.models import SportsBettingOddsCreate
@@ -28,15 +29,22 @@ def root():
 
 
 @app.post("/bookmaker_matches/")
-def create_match(match: BookmakerMatchCreate, session: Session = Depends(get_session)):
-    logger.info(f"create_match called with payload: {match}")
-    match_obj = BookmakerMatch.model_validate(match)
-    session.add(match_obj)
-    session.commit()
-    session.refresh(match_obj)
-    logger.info(f"Created match: {match_obj}")
-    return match_obj
-
+def create_bookmaker_match(match: BookmakerMatchCreate, session: Session = Depends(get_session)):
+    try:
+        match_obj = BookmakerMatch.model_validate(match)
+        session.add(match_obj)
+        session.commit()
+        session.refresh(match_obj)
+        return match_obj
+    except IntegrityError:
+        session.rollback()
+        return session.exec(
+            select(BookmakerMatch).where(
+                BookmakerMatch.bookmaker == match.bookmaker,
+                BookmakerMatch.match_label == match.match_label,
+                BookmakerMatch.match_datetime == match.match_datetime,
+            )
+        ).first()
 
 @app.get("/bookmaker_matches/")
 def read_matches(session: Session = Depends(get_session)):
