@@ -60,7 +60,7 @@ def get_sports_bets() -> tuple[list[SportsBettingOddsCreate], list[MatchCreate]]
 
         matches.append(
             MatchCreate(
-                bookmaker=BOOKMAKER,
+                bookmaker='Loro',
                 bookmaker_event_id=event_json['id'],
                 match_label=event_json['description'],
                 match_datetime=match_datetime,

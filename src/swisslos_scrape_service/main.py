@@ -6,7 +6,7 @@ import json
 import zlib
 import time
 
-from core.models import MatchCreate, SportsBettingOddsCreate
+from core.models import BookmakerMatchCreate, SportsBettingOddsCreate
 
 log_path = Path(__file__).parent / 'scrapers.log'
 logging.basicConfig(
@@ -62,7 +62,7 @@ def collect_messages() -> list[dict]:
     return messages
 
 
-def parse_messages(messages: list[dict]) -> tuple[list[MatchCreate], list[SportsBettingOddsCreate]]:
+def parse_messages(messages: list[dict]) -> tuple[list[BookmakerMatchCreate], list[SportsBettingOddsCreate]]:
     competitors = {}
     selections = {}
     markets = {}
@@ -105,7 +105,7 @@ def parse_messages(messages: list[dict]) -> tuple[list[MatchCreate], list[Sports
                 elif t == 'Event':
                     events.append(entity)
 
-    print(f'{len(competitors)=} {len(selections)=} {len(markets)=} {len(events)=}')
+    logger.info(f'{len(competitors)=} {len(selections)=} {len(markets)=} {len(events)=}')
 
     matches = []
     odds_list = []
@@ -123,6 +123,7 @@ def parse_messages(messages: list[dict]) -> tuple[list[MatchCreate], list[Sports
         match_label = f'{team1} vs {team2}'
         match_datetime = datetime.fromisoformat(event['startTime'].replace('Z', '+00:00'))
         event_id = int(event['urn'].split(':')[-1])
+        betradar_match_id = event.get('properties', {}).get('BetradarStatisticsId')
 
         market_1x2 = None
         for market_urn in event.get('markets', []):
@@ -145,9 +146,10 @@ def parse_messages(messages: list[dict]) -> tuple[list[MatchCreate], list[Sports
         if 'home' not in odds_by_type or 'away' not in odds_by_type:
             continue
 
-        matches.append(MatchCreate(
+        matches.append(BookmakerMatchCreate(
             bookmaker=BOOKMAKER,
             bookmaker_event_id=event_id,
+            betradar_match_id=betradar_match_id,
             match_label=match_label,
             match_datetime=match_datetime,
             team1=team1,
@@ -179,14 +181,20 @@ if __name__ == '__main__':
 
         for match, odds in zip(matches, odds_list):
             match_response = requests.post(
-                f'{DB_SERVICE_URL}/matches/',
+                f'{DB_SERVICE_URL}/bookmaker_matches/',
                 json=match.model_dump(mode='json')
             )
-       
-            requests.post(
+            if match_response.status_code != 200:
+                logger.error(f'failed to post match: {match_response.text}')
+                continue
+            match_id = match_response.json().get('id')
+            odds.bookmaker_match_id = match_id
+            odds_response = requests.post(
                 f'{DB_SERVICE_URL}/sports_betting_odds/',
                 json=odds.model_dump(mode='json')
             )
+            if odds_response.status_code != 200:
+                logger.error(f'failed to post odds: {odds_response.text}')
 
         logger.info(f'posted {len(matches)} matches and odds to db_service')
 

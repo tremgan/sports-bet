@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends
-from core.models import Match, MatchCreate ,SportsBettingOdds
+from core.models import BookmakerMatch, BookmakerMatchCreate ,SportsBettingOdds
 from sqlmodel import SQLModel, Session, select
 from config import engine
 import logging
@@ -28,9 +28,9 @@ def root():
 
 
 @app.post("/matches/")
-def create_match(match: MatchCreate, session: Session = Depends(get_session)):
+def create_match(match: BookmakerMatchCreate, session: Session = Depends(get_session)):
     logger.info(f"create_match called with payload: {match}")
-    match_obj = Match.model_validate(match)
+    match_obj = BookmakerMatch.model_validate(match)
     session.add(match_obj)
     session.commit()
     session.refresh(match_obj)
@@ -41,7 +41,7 @@ def create_match(match: MatchCreate, session: Session = Depends(get_session)):
 @app.get("/matches/")
 def read_matches(session: Session = Depends(get_session)):
     logger.info("read_matches called")
-    matches = session.exec(select(Match)).all()
+    matches = session.exec(select(BookmakerMatch)).all()
     logger.info(f"read_matches returning {len(matches)} records: {matches}")
     return matches
 

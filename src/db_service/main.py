@@ -1,12 +1,6 @@
-from sqlalchemy import create_engine
-
-from sqlmodel import SQLModel
-import os
-
-from config import SQLMODEL_DB_URL
+import uvicorn
+from api import app
 
 
 if __name__ == "__main__":
-    pass
-   
-    
+    uvicorn.run(app, host="0.0.0.0", port=8000)
