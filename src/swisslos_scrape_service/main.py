@@ -1,5 +1,5 @@
 from playwright.sync_api import Playwright, sync_playwright
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import logging
 import json
@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(Path(__file__).name)
 
-BOOKMAKER = 'swisslos'
+BOOKMAKER = 'Swisslos'
 SELECTION_TYPE_MAP = {
     'asw:selectiontype:1': 'home',
     'asw:selectiontype:2': 'draw',
@@ -122,8 +122,7 @@ def parse_messages(messages: list[dict]) -> tuple[list[BookmakerMatchCreate], li
 
         match_label = f'{team1} vs {team2}'
         match_datetime = datetime.fromisoformat(event['startTime'].replace('Z', '+00:00'))
-        event_id = int(event['urn'].split(':')[-1])
-        betradar_match_id = event.get('properties', {}).get('BetradarStatisticsId')
+        match_datetime = match_datetime.astimezone(timezone.utc).replace(tzinfo=None)
 
         market_1x2 = None
         for market_urn in event.get('markets', []):
@@ -148,17 +147,11 @@ def parse_messages(messages: list[dict]) -> tuple[list[BookmakerMatchCreate], li
 
         matches.append(BookmakerMatchCreate(
             bookmaker=BOOKMAKER,
-            bookmaker_event_id=event_id,
-            betradar_match_id=betradar_match_id,
             match_label=match_label,
-            match_datetime=match_datetime,
-            team1=team1,
-            team2=team2,
+            match_datetime=match_datetime
         ))
 
         odds_list.append(SportsBettingOddsCreate(
-            bookmaker=BOOKMAKER,
-            bookmaker_event_id=event_id,
             team1_odds=odds_by_type['home'],
             team2_odds=odds_by_type['away'],
             draw_odds=odds_by_type.get('draw'),
@@ -187,8 +180,7 @@ if __name__ == '__main__':
             if match_response.status_code != 200:
                 logger.error(f'failed to post match: {match_response.text}')
                 continue
-            match_id = match_response.json().get('id')
-            odds.bookmaker_match_id = match_id
+            odds.bookmaker_match_id = match_response.json().get('id')
             odds_response = requests.post(
                 f'{DB_SERVICE_URL}/sports_betting_odds/',
                 json=odds.model_dump(mode='json')
