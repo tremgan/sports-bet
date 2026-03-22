@@ -1,0 +1,223 @@
+2026-03-20 22:19:15,551:main.py:INFO:scraped 585 sports bets in 45.59s
+2026-03-20 22:29:01,876:main.py:INFO:scraped 585 sports bets in 45.62s
+2026-03-21 10:16:23,109:main.py:INFO:scraped 580 sports bets in 3.32s
+2026-03-21 10:19:36,223:main.py:INFO:scraped 580 sports bets in 45.30s
+2026-03-21 10:59:46,542:main.py:INFO:scraped 1 sports bets in 45.41s
+2026-03-21 10:59:46,544:main.py:ERROR:scrape error
+Traceback (most recent call last):
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\main.py", line 70, in <module>
+    requests.post(f'{DB_SERVICE_URL}/sports_betting_odds/', json=sports_bets[0])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\sessions.py", line 575, in request
+    prep = self.prepare_request(req)
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\sessions.py", line 484, in prepare_request
+    p.prepare(
+    ~~~~~~~~~^
+        method=request.method.upper(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<10 lines>...
+        hooks=merge_hooks(request.hooks, self.hooks),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\models.py", line 370, in prepare
+    self.prepare_body(data, files, json)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\models.py", line 510, in prepare_body
+    body = complexjson.dumps(json, allow_nan=False)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type SportsBettingOddsCreate is not JSON serializable
+2026-03-21 11:04:29,998:main.py:INFO:scraped 1 sports bets in 45.92s
+2026-03-21 11:16:54,689:main.py:INFO:scraped 1 sports bets in 3.07s
+2026-03-21 11:18:12,911:main.py:INFO:scraped 581 sports bets in 3.11s
+2026-03-21 13:04:56,872:main.py:ERROR:scrape error
+Traceback (most recent call last):
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\main.py", line 74, in <module>
+    sports_bets, matches = get_sports_bets()
+                           ~~~~~~~~~~~~~~~^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\main.py", line 50, in get_sports_bets
+    sports_bet = SportsBettingOddsCreate(
+        bookmaker='Swisslos',
+    ...<3 lines>...
+        draw_odds=outcomes.get('X'),  # returns None if not present
+    )
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\sqlmodel\main.py", line 845, in __init__
+    sqlmodel_init(self=__pydantic_self__, data=data)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\sqlmodel\_compat.py", line 332, in sqlmodel_init
+    self.__pydantic_validator__.validate_python(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+        self_instance=self,
+        ^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for SportsBettingOddsCreate
+bookmaker_event_id
+  Input should be a valid string [type=string_type, input_value=1651932, input_type=int]
+    For further information visit https://errors.pydantic.dev/2.12/v/string_type
+2026-03-21 13:08:21,053:main.py:ERROR:scrape error
+Traceback (most recent call last):
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\main.py", line 74, in <module>
+    sports_bets, matches = get_sports_bets()
+                           ~~~~~~~~~~~~~~~^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\main.py", line 60, in get_sports_bets
+    MatchCreate(
+    ~~~~~~~~~~~^
+        bookmaker_event_id=event_json['id'],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        team2=team2
+        ^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\sqlmodel\main.py", line 845, in __init__
+    sqlmodel_init(self=__pydantic_self__, data=data)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\sqlmodel\_compat.py", line 332, in sqlmodel_init
+    self.__pydantic_validator__.validate_python(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+        self_instance=self,
+        ^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MatchCreate
+match_label
+  Field required [type=missing, input_value={'bookmaker_event_id': 16...ors', 'team2': 'Sirius'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.12/v/missing
+2026-03-21 13:14:08,186:main.py:INFO:scraped 565 sports bets in 45.65s
+2026-03-21 13:14:08,190:main.py:ERROR:scrape error
+Traceback (most recent call last):
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\main.py", line 83, in <module>
+    requests.post(f'{DB_SERVICE_URL}/sports_betting_odds/', json=sports_bet.model_dump())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\sessions.py", line 575, in request
+    prep = self.prepare_request(req)
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\sessions.py", line 484, in prepare_request
+    p.prepare(
+    ~~~~~~~~~^
+        method=request.method.upper(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<10 lines>...
+        hooks=merge_hooks(request.hooks, self.hooks),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\models.py", line 370, in prepare
+    self.prepare_body(data, files, json)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\models.py", line 510, in prepare_body
+    body = complexjson.dumps(json, allow_nan=False)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type datetime is not JSON serializable
+2026-03-21 13:16:36,183:main.py:INFO:scraped 565 sports bets in 45.76s
+2026-03-21 13:16:55,214:main.py:ERROR:scrape error
+Traceback (most recent call last):
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\main.py", line 87, in <module>
+    requests.post(f'{DB_SERVICE_URL}/matches/', json=match.model_dump())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\sessions.py", line 575, in request
+    prep = self.prepare_request(req)
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\sessions.py", line 484, in prepare_request
+    p.prepare(
+    ~~~~~~~~~^
+        method=request.method.upper(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<10 lines>...
+        hooks=merge_hooks(request.hooks, self.hooks),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\models.py", line 370, in prepare
+    self.prepare_body(data, files, json)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\swisslos_scrape_service\.venv\Lib\site-packages\requests\models.py", line 510, in prepare_body
+    body = complexjson.dumps(json, allow_nan=False)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\Remi Tregan\AppData\Roaming\uv\python\cpython-3.13.7-windows-x86_64-none\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type datetime is not JSON serializable
+2026-03-21 13:19:02,812:main.py:INFO:scraped 565 sports bets in 45.60s
+2026-03-21 14:33:42,104:main.py:INFO:scraped 543 sports bets in 45.23s
+2026-03-21 19:22:17,167:main.py:INFO:scraped 481 sports bets in 2.99s
+2026-03-21 19:32:54,615:main.py:INFO:scraped 478 sports bets in 44.95s
+2026-03-21 20:23:20,079:main.py:INFO:scraped 470 sports bets in 44.98s
+2026-03-21 20:29:23,648:main.py:INFO:scraped 470 sports bets in 44.80s
+2026-03-21 20:38:41,765:main.py:INFO:scraped 467 sports bets in 44.91s
+2026-03-21 21:53:02,193:main.py:INFO:scraped 467 matches in 3.02s
+2026-03-21 21:53:02,239:main.py:ERROR:scrape error
+Traceback (most recent call last):
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\loro_scrape_service\main.py", line 81, in <module>
+    odds.bookmaker_match_id = bookmaker_match_id
+    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\loro_scrape_service\.venv\Lib\site-packages\sqlmodel\main.py", line 858, in __setattr__
+    super().__setattr__(name, value)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\loro_scrape_service\.venv\Lib\site-packages\pydantic\main.py", line 1032, in __setattr__
+    elif (setattr_handler := self._setattr_handler(name, value)) is not None:
+                             ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Remi Tregan\CodingProjects\other\sports-bet\src\loro_scrape_service\.venv\Lib\site-packages\pydantic\main.py", line 1079, in _setattr_handler
+    raise ValueError(f'"{cls.__name__}" object has no field "{name}"')
+ValueError: "SportsBettingOddsCreate" object has no field "bookmaker_match_id"
+2026-03-21 21:54:46,429:main.py:INFO:scraped 467 matches in 3.10s
+2026-03-21 21:54:46,452:main.py:ERROR:failed to post match: Internal Server Error
+2026-03-21 21:55:14,714:main.py:INFO:posted 467 matches and odds to db_service
+2026-03-21 22:09:47,629:main.py:INFO:scraped 467 matches in 3.16s
+2026-03-21 22:10:04,157:main.py:INFO:posted 467 matches and odds to db_service
+2026-03-21 22:12:54,449:main.py:INFO:scraped 467 matches in 2.59s
+2026-03-21 22:13:11,057:main.py:INFO:posted 467 matches and odds to db_service
+2026-03-21 23:43:28,770:main.py:INFO:scraped 462 matches in 13.80s
+2026-03-21 23:43:48,568:main.py:INFO:posted 462 matches and odds to db_service
+2026-03-22 10:48:00,558:main.py:INFO:scraped 440 matches in 2.84s
+2026-03-22 10:48:20,588:main.py:INFO:posted 440 matches and odds to db_service
+2026-03-22 10:54:55,130:main.py:INFO:scraped 440 matches in 2.30s
+2026-03-22 10:55:15,067:main.py:INFO:posted 440 matches and odds to db_service
+2026-03-22 11:48:26,088:main.py:INFO:scraped 439 matches in 2.61s
+2026-03-22 11:48:47,655:main.py:INFO:posted 439 matches and odds to db_service
+2026-03-22 12:01:12,949:main.py:INFO:scraped 436 matches in 2.89s
+2026-03-22 12:01:32,400:main.py:INFO:posted 436 matches and odds to db_service
+2026-03-22 12:21:44,713:main.py:INFO:scraped 439 matches in 45.02s
+2026-03-22 12:22:05,028:main.py:INFO:posted 439 matches and odds to db_service

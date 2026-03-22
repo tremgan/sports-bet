@@ -23,8 +23,8 @@ services:
       context: .
       dockerfile: src\db_service\Dockerfile
     container_name: sports-bet-db-service
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     environment:
       - SQLMODEL_DB_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     depends_on:
