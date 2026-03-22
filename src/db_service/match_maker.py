@@ -4,13 +4,14 @@ from typing import Optional
 from datetime import timedelta
 from rapidfuzz import fuzz
 
-
-from config import engine
 from core.models import BookmakerMatch, BookmakerMatchCreate ,SportsBettingOdds, Match
 from logger import logger
 
 """
-This module is responsible for matching incoming bookmaker matches with existing matches in the database."""
+This module is responsible for matching incoming bookmaker matches with existing matches in the database, 
+or creating new matches if no good match is found. It uses a combination of exact matching and fuzzy string matching to find the best match for each incoming bookmaker match. 
+The matching process is designed to be robust to minor differences in match labels and to allow for some flexibility in match datetimes.
+"""
 
 
 TIME_DELTA_FOR_MATCHING = timedelta(hours=1)
@@ -69,25 +70,31 @@ def create_match_from_bookmaker_match(bookmaker_match: BookmakerMatch) -> Match:
         team2=bookmaker_match.match_label.split(' vs ')[1],
     )
         
-def main():
-    with Session(engine) as session:
-        bookmaker_matches = session.exec(select(BookmakerMatch).where(BookmakerMatch.match_id == None, 
-                                                                      BookmakerMatch.matching_attempts < 3)).all()
-        for bookmaker_match in bookmaker_matches:
-            match = find_match(bookmaker_match, session)
-            if not match:
-                # If no match found, create a new Match and link it to the BookmakerMatch
-                match = create_match_from_bookmaker_match(bookmaker_match)
-                session.add(match)
-                session.flush()  # flush to get the new match ID
 
-            bookmaker_match.match_id = match.id
-            # Increment matching attempts
-            bookmaker_match.matching_attempts += 1
-            session.add(bookmaker_match)
-            session.commit()
+def run(session: Session):
+
+    bookmaker_matches = session.exec(select(BookmakerMatch).where(BookmakerMatch.match_id == None, 
+                                                                    BookmakerMatch.matching_attempts < 3)).all()
+    for bookmaker_match in bookmaker_matches:
+        match = find_match(bookmaker_match, session)
+        if not match:
+            # If no match found, create a new Match and link it to the BookmakerMatch
+            match = create_match_from_bookmaker_match(bookmaker_match)
+            session.add(match)
+            session.flush()  # flush to get the new match ID
+
+        bookmaker_match.match_id = match.id
+        # Increment matching attempts
+        bookmaker_match.matching_attempts += 1
+        session.add(bookmaker_match)
+        
+        session.commit()
 
 
     
 if __name__ == '__main__':
-    main()
+
+    from config import engine
+
+    with Session(engine) as session:
+        run(session)

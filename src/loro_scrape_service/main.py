@@ -88,6 +88,8 @@ if __name__ == '__main__':
 
         logger.info(f'posted {len(matches)} matches and odds to db_service')
 
+        requests.post(f'{DB_SERVICE_URL}/run_matching/')
+
     except Exception as e:
         logger.exception('scrape error')
         raise

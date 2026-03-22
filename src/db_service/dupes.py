@@ -3,6 +3,7 @@ from core.models import BookmakerMatch, Match
 from config import engine
 from rich import print
 
+
 with Session(engine) as session:
     duplicates = session.exec(
         select(BookmakerMatch.match_id, func.count(BookmakerMatch.id).label("count"))

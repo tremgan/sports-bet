@@ -5,8 +5,10 @@ from config import engine
 import logging
 from sqlalchemy.exc import IntegrityError
 
+
 from logger import logger
 from core.models import SportsBettingOddsCreate
+import match_maker
 
 SQLModel.metadata.create_all(engine)
 
@@ -72,9 +74,48 @@ def create_sports_betting_odds_bulk(odds_list: list[SportsBettingOddsCreate], se
     session.commit()
     return {"created": len(odds_objs)}
 
+
 @app.get("/sports_betting_odds/")
 def read_sports_betting_odds(session: Session = Depends(get_session)):
     logger.info("read_sports_betting_odds called")
     odds = session.exec(select(SportsBettingOdds)).all()
     logger.info(f"read_sports_betting_odds returning {len(odds)} records: {odds}")
     return odds
+
+
+@app.post("/run_matching/")
+def trigger_matching(session: Session = Depends(get_session)):
+    logger.info("matching triggered via endpoint")
+    match_maker.run(session)
+    return {"status": "matching complete"}
+
+
+@app.get("/matches/with_odds/")
+def read_matches_with_odds(session: Session = Depends(get_session)):
+    matches = session.exec(select(Match)).all()
+    
+    result = []
+    for match in matches:
+        bookmaker_data = {}
+        for bm in match.bookmaker_matches:
+            latest_odds = session.exec(
+                select(SportsBettingOdds)
+                .where(SportsBettingOdds.bookmaker_match_id == bm.id)
+                .order_by(SportsBettingOdds.timestamp.desc())
+            ).first()
+            
+            if latest_odds:
+                bookmaker_data[bm.bookmaker] = {
+                    "team1_odds": latest_odds.team1_odds,
+                    "draw_odds": latest_odds.draw_odds,
+                    "team2_odds": latest_odds.team2_odds,
+                    "timestamp": latest_odds.timestamp,
+                }
+        
+        if len(bookmaker_data) > 1:  # only return matches with multiple bookmakers
+            result.append({
+                "match": match,
+                "bookmaker_odds": bookmaker_data,
+            })
+    
+    return result
