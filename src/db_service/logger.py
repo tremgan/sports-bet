@@ -12,7 +12,9 @@ def setup_logger() -> logging.Logger:
     if not logger.handlers:
         file_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
         file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        )
 
         rich_handler = RichHandler(rich_tracebacks=True)
         rich_handler.setLevel(logging.INFO)
@@ -21,5 +23,6 @@ def setup_logger() -> logging.Logger:
         logger.addHandler(rich_handler)
 
     return logger
+
 
 logger = setup_logger()

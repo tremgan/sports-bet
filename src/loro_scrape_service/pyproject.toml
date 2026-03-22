@@ -1,5 +1,5 @@
 [project]
-name = "swisslos-scrape-service"
+name = "loro-scrape-service"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
