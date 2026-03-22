@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends
-from core.models import BookmakerMatch, BookmakerMatchCreate ,SportsBettingOdds
+from core.models import BookmakerMatch, BookmakerMatchCreate ,SportsBettingOdds, Match
 from sqlmodel import SQLModel, Session, select
 from config import engine
 import logging
@@ -88,6 +88,7 @@ def trigger_matching(session: Session = Depends(get_session)):
     logger.info("matching triggered via endpoint")
     match_maker.run(session)
     return {"status": "matching complete"}
+
 
 
 @app.get("/matches/with_odds/")
