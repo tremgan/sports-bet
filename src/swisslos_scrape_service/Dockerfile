@@ -1,15 +1,13 @@
-FROM ghcr.io/astral-sh/uv:latest
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /app
 
-# Copy core and swisslos_scrape_service
-COPY src/core ./src/core
-COPY src/swisslos_scrape_service ./src/swisslos_scrape_service
+COPY src/core ./core
+COPY src/swisslos_scrape_service ./swisslos_scrape_service
 
-WORKDIR /app/src/swisslos_scrape_service
+WORKDIR /app/swisslos_scrape_service
 
-# Sync dependencies
 RUN uv sync --no-editable
+RUN uv run playwright install chromium --with-deps
 
-# Run the scraping service
-CMD ["uv", "run", "python", "main.py"]
+CMD ["uv", "run", "main.py"]
