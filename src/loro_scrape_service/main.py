@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 import time
 import logging
-from rich import print
 
 from config import DB_SERVICE_URL
 from core.models import BookmakerMatchCreate, SportsBettingOddsCreate
@@ -99,6 +98,6 @@ if __name__ == "__main__":
 
         requests.post(f"{DB_SERVICE_URL}/run_matching/")
 
-    except Exception as e:
+    except Exception:
         logger.exception("scrape error")
         raise

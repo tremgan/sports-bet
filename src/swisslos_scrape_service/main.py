@@ -1,4 +1,4 @@
-from playwright.sync_api import Playwright, sync_playwright
+from playwright.sync_api import sync_playwright
 from datetime import datetime, timezone
 from pathlib import Path
 import logging
@@ -53,8 +53,12 @@ def collect_messages() -> list[dict]:
             ws.on("close", lambda _: logger.info("websocket closed"))
 
         page.on("websocket", on_websocket)
-        page.goto("https://www.swisslos.ch/de/sporttip/sportwetten/fussball")
-        time.sleep(10)
+        page.goto(
+            "https://www.swisslos.ch/de/sporttip/sportwetten/fussball",
+            timeout=180_000,  # 3 min page load timeout
+            wait_until="networkidle",
+        )
+        time.sleep(60)
         page.close()
         browser.close()
 
@@ -202,6 +206,6 @@ if __name__ == "__main__":
 
         requests.post(f"{DB_SERVICE_URL}/run_matching/")
 
-    except Exception as e:
+    except Exception:
         logger.exception("scrape error")
         raise

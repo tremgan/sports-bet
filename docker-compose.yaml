@@ -11,6 +11,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data    
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
@@ -38,11 +40,11 @@ services:
     container_name: loro-scrape-service
     environment: 
       - DB_SERVICE_URL=http://db_service:8000
-
     depends_on:
       db_service:
         condition: service_started
-  
+
+
   swisslos_scrape_service:
     build:
       context: .
@@ -54,7 +56,6 @@ services:
     depends_on:
       db_service:
         condition: service_started
-
 
   dashboard:
     build:
@@ -72,3 +73,5 @@ services:
     restart: unless-stopped
 
 
+volumes:                    
+  postgres_data:

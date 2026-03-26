@@ -1,9 +1,9 @@
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import Session, select
 from typing import Optional
 from datetime import timedelta
 from rapidfuzz import fuzz
 
-from core.models import BookmakerMatch, BookmakerMatchCreate, SportsBettingOdds, Match
+from core.models import BookmakerMatch, Match
 from logger import logger
 
 """

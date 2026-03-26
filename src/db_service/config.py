@@ -2,7 +2,8 @@ from dotenv import load_dotenv
 import os
 from sqlmodel import create_engine
 
-load_dotenv()  # reads .env from cwd by default
+
+load_dotenv(override=False)  # reads .env from cwd by default
 
 SQLMODEL_DB_URL = os.getenv("SQLMODEL_DB_URL", False)
 if not SQLMODEL_DB_URL:
