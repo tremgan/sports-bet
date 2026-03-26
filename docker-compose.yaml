@@ -23,7 +23,7 @@ services:
   db_service:
     build:
       context: .
-      dockerfile: src\db_service\Dockerfile
+      dockerfile: src/db_service/Dockerfile
     container_name: sports-bet-db-service
     expose:
       - "8000"
@@ -36,7 +36,7 @@ services:
   loro_scrape_service:
     build:
       context: .
-      dockerfile: src\loro_scrape_service\Dockerfile
+      dockerfile: src/loro_scrape_service/Dockerfile
     container_name: loro-scrape-service
     environment: 
       - DB_SERVICE_URL=http://db_service:8000
@@ -48,7 +48,7 @@ services:
   swisslos_scrape_service:
     build:
       context: .
-      dockerfile: src\swisslos_scrape_service\Dockerfile
+      dockerfile: src/swisslos_scrape_service/Dockerfile
     container_name: swisslos-scrape-service
     environment: 
       - DB_SERVICE_URL=http://db_service:8000
