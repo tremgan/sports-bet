@@ -1,3 +1,5 @@
+import os
+
 import requests
 from datetime import datetime, timezone
 from pathlib import Path
@@ -68,8 +70,7 @@ def get_sports_bets() -> tuple[
 
     return matches, sports_bets
 
-
-if __name__ == "__main__":
+def main():
     try:
         t0 = time.perf_counter()
         matches, sports_bets = get_sports_bets()
@@ -101,3 +102,14 @@ if __name__ == "__main__":
     except Exception:
         logger.exception("scrape error")
         raise
+
+
+if __name__ == "__main__":
+
+    SCRAPE_FREQUENCY_HOURS = int(os.getenv("SCRAPE_FREQUENCY_HOURS", 3))
+
+    if __name__ == "__main__":
+        while True:
+            main()
+            time.sleep(SCRAPE_FREQUENCY_HOURS * 60 * 60)
+    

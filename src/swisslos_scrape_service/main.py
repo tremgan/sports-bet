@@ -1,3 +1,5 @@
+import os
+
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timezone
 from pathlib import Path
@@ -5,6 +7,8 @@ import logging
 import json
 import zlib
 import time
+import requests
+from config import DB_SERVICE_URL
 
 from core.models import BookmakerMatchCreate, SportsBettingOddsCreate
 
@@ -174,9 +178,8 @@ def parse_messages(
     return matches, odds_list
 
 
-if __name__ == "__main__":
-    import requests
-    from config import DB_SERVICE_URL
+def main():
+
 
     try:
         t0 = time.perf_counter()
@@ -209,3 +212,15 @@ if __name__ == "__main__":
     except Exception:
         logger.exception("scrape error")
         raise
+
+        
+
+if __name__ == "__main__":
+    
+    SCRAPE_FREQUENCY_HOURS = int(os.getenv("SCRAPE_FREQUENCY_HOURS", 3))
+
+    if __name__ == "__main__":
+        while True:
+            main()
+            time.sleep(SCRAPE_FREQUENCY_HOURS * 60 * 60)
+    

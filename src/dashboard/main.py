@@ -1,45 +1,70 @@
 import streamlit as st
 import requests
 import pandas as pd
+import os
 
-from config import DB_SERVICE_URL
-
-st.set_page_config(page_title="Sports Betting Odds", layout="wide")
-st.title("Latest Scraped Odds")
+DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
 
 
-@st.cache_data(ttl=30)
-def fetch_matches_with_odds():
+def fetch_matches_with_odds() -> list[dict]:
     response = requests.get(f"{DB_SERVICE_URL}/matches/with_odds/")
+    response.raise_for_status()
     return response.json()
 
 
-data = fetch_matches_with_odds()
+def compute_margin(bookmaker_odds: dict) -> float:
+    best_team1 = max(v["team1_odds"] for v in bookmaker_odds.values())
+    best_draw = max(v["draw_odds"] for v in bookmaker_odds.values() if v["draw_odds"])
+    best_team2 = max(v["team2_odds"] for v in bookmaker_odds.values())
+    return 1/best_team1 + 1/best_draw + 1/best_team2
 
-if not data:
-    st.info("No paired matches yet.")
-else:
-    rows = []
+
+def render_matches():
+    st.title("Sports Betting Arbitrage Scanner")
+
+    data = fetch_matches_with_odds()
+
+    if not data:
+        st.info("No matches with odds from multiple bookmakers found.")
+        return
+
+    # sort by margin
+    data.sort(key=lambda item: compute_margin(item["bookmaker_odds"]))
+
     for item in data:
         match = item["match"]
-        for bookmaker, odds in item["bookmaker_odds"].items():
-            rows.append(
-                {
-                    "match": match["match_label"],
-                    "datetime": match["match_datetime"],
-                    "bookmaker": bookmaker,
-                    "team1_odds": odds["team1_odds"],
-                    "draw_odds": odds.get("draw_odds"),
-                    "team2_odds": odds["team2_odds"],
-                    "scraped_at": odds["timestamp"],
-                }
-            )
+        bookmaker_odds = item["bookmaker_odds"]
 
-    df = pd.DataFrame(rows)
-    df["datetime"] = pd.to_datetime(df["datetime"]).dt.strftime("%Y-%m-%d %H:%M")
-    df["scraped_at"] = pd.to_datetime(df["scraped_at"]).dt.strftime("%Y-%m-%d %H:%M")
-    st.dataframe(df, use_container_width=True)
+        margin = compute_margin(bookmaker_odds)
+        has_arb = margin < 1.0
+        margin_pct = (margin - 1) * 100
 
-if st.button("Refresh"):
-    st.cache_data.clear()
-    st.rerun()
+        label = f"{'🟢' if has_arb else '🔴'} {match['match_label']} — margin: {margin_pct:.2f}%"
+
+        with st.expander(label):
+            st.markdown(f"**{match['match_datetime']}**")
+
+            # build odds dataframe
+            odds_df = pd.DataFrame(bookmaker_odds).T
+            odds_df.index.name = "Bookmaker"
+            st.markdown("#### All bookmaker odds")
+            st.dataframe(odds_df, use_container_width=True)
+
+            best_odds = {
+                "team1": max(bookmaker_odds.values(), key=lambda v: v["team1_odds"]),
+                "draw": max((v for v in bookmaker_odds.values() if v["draw_odds"]), key=lambda v: v["draw_odds"]),
+                "team2": max(bookmaker_odds.values(), key=lambda v: v["team2_odds"]),
+            }
+            st.markdown("#### Best odds")
+            best_df = pd.DataFrame({
+                "Outcome": ["Team 1", "Draw", "Team 2"],
+                "Best Odds": [best_odds["team1"]["team1_odds"], best_odds["draw"]["draw_odds"], best_odds["team2"]["team2_odds"]],
+            })
+            st.dataframe(best_df, use_container_width=True)
+
+            if has_arb:
+                profit = (1 / margin - 1) * 100
+                st.success(f"Arbitrage opportunity! Profit: {profit:.2f}%")
+
+
+render_matches()

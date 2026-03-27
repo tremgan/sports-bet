@@ -1,13 +1,13 @@
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
-WORKDIR /app
-
-COPY src/core ./core
-COPY src/dashboard ./dashboard
-
 WORKDIR /app/dashboard
 
-RUN uv sync --no-editable
+COPY src/core /app/core
+COPY src/dashboard/pyproject.toml .
+COPY src/dashboard/uv.lock .
+RUN uv sync --no-editable --frozen
+
+COPY src/dashboard .
 
 EXPOSE 8501
 

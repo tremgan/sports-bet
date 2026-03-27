@@ -54,7 +54,12 @@ class BettingRepository:
         result = []
         for match in matches:
             bookmaker_data = {}
-            for bm in match.bookmaker_matches:
+            
+            bookmaker_matches = self.session.exec(
+                select(BookmakerMatch).where(BookmakerMatch.match_id == match.id)
+            ).all()
+            
+            for bm in bookmaker_matches:
                 latest_odds = self.session.exec(
                     select(SportsBettingOdds)
                     .where(SportsBettingOdds.bookmaker_match_id == bm.id)
@@ -67,6 +72,7 @@ class BettingRepository:
                         "team2_odds": latest_odds.team2_odds,
                         "timestamp": latest_odds.timestamp,
                     }
+            
             if len(bookmaker_data) > 1:
                 result.append({"match": match, "bookmaker_odds": bookmaker_data})
         return result

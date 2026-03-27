@@ -1,12 +1,12 @@
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
-WORKDIR /app
-
-COPY src/core ./core
-COPY src/loro_scrape_service ./loro_scrape_service
-
 WORKDIR /app/loro_scrape_service
 
-RUN uv sync --no-editable
+COPY src/core /app/core
+COPY src/loro_scrape_service/pyproject.toml .
+COPY src/loro_scrape_service/uv.lock .
+RUN uv sync --no-editable --frozen
+
+COPY src/loro_scrape_service .
 
 CMD ["uv", "run", "main.py"]

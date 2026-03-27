@@ -5,8 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "core",
     "pandas>=2.3.3",
     "python-dotenv>=1.2.2",
     "requests>=2.32.5",
     "streamlit>=1.55.0",
 ]
+
+[tool.uv.sources]
+core = { path = "../core", editable = true }
