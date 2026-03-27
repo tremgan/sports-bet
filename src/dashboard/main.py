@@ -21,6 +21,8 @@ def compute_margin(bookmaker_odds: dict) -> float:
 
 def render_matches():
     st.title("Sports Betting Arbitrage Scanner")
+    st.markdown("---")
+    st.markdown("Made by [Remi Tregan](https://github.com/tremgan) · [GitHub](https://github.com/tremgan/sports-bet)")
 
     data = fetch_matches_with_odds()
 
