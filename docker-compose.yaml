@@ -73,5 +73,16 @@ services:
     restart: unless-stopped
 
 
+  # scheduler for scrapers
+  ofelia: # https://github.com/mcuadros/ofelia
+    image: mcuadros/ofelia:latest
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  labels:
+    ofelia.job-run.loro-scrape.schedule: "@every 3h"
+    ofelia.job-run.loro-scrape.container: "loro-scrape-service"
+    ofelia.job-run.swisslos-scrape.schedule: "@every 3h"
+    ofelia.job-run.swisslos-scrape.container: "swisslos-scrape-service"
 volumes:                    
   postgres_data:
