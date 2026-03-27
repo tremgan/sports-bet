@@ -94,12 +94,16 @@ Both scrapers trigger the matching process automatically after posting data via 
 - Streamlit for the dashboard
 - uv for dependency management
 - Docker + Docker Compose for containerization and orchestration
+- GitHub Actions for CI/CD
 
 ## Project Structure
 
 ```
 sports-bet/
 |-- docker-compose.yaml
+|-- .github/
+|   +-- workflows/
+|       +-- hostinger_deploy.yaml   # GitHub Actions deploy workflow
 |-- .env                        # Postgres credentials (do not commit)
 |-- .gitignore
 |-- src/
@@ -210,6 +214,30 @@ docker build -f src/loro_scrape_service/Dockerfile -t arb-loro-scraper .
 docker build -f src/swisslos_scrape_service/Dockerfile -t arb-swisslos-scraper .
 docker build -f src/dashboard/Dockerfile -t arb-dashboard .
 ```
+
+## CI/CD
+
+Deployments are automated via GitHub Actions. Pushing to `main` (or triggering the workflow manually) SSHs into the VPS, pulls the latest code, and rebuilds all containers in detached mode.
+
+The workflow requires three repository secrets:
+
+| Secret | Description |
+|---|---|
+| `VPS_HOST` | Public IP or hostname of the VPS |
+| `VPS_USER` | SSH username (e.g. `root` or a deploy user) |
+| `VPS_SSH_KEY` | Private SSH key with access to the VPS |
+
+To add these, go to **Settings → Secrets and variables → Actions** in your GitHub repository.
+
+The deploy step runs:
+
+```bash
+cd ~/projects/sports-bet
+git pull origin main
+docker compose up -d --build
+```
+
+The project is expected to be cloned at `~/projects/sports-bet` on the VPS before the first deploy.
 
 ## API Endpoints
 
