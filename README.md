@@ -1,12 +1,10 @@
-# Swiss Sports Betting Arbitrage Finder
+# Swiss Sports Bet Markets
 
 A Python microservice application that scrapes real-time football (soccer) betting odds from multiple Swiss bookmakers, matches events across sources using fuzzy string matching, and surfaces cross-bookmaker odds comparisons through a Streamlit dashboard.
 
-The goal is to detect arbitrage opportunities: situations where the combined odds across bookmakers guarantee a profit regardless of outcome.
-
 ## Project Status
 
-Early-stage prototype. The scraping pipeline, data storage, cross-bookmaker matching, and dashboard are functional. The arbitrage detection engine (the core value proposition) is not yet implemented.
+Early-stage prototype. The scraping pipeline, data storage, cross-bookmaker matching, and dashboard are functional. 
 
 ## Architecture
 
