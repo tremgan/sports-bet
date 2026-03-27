@@ -1,4 +1,4 @@
-# Swiss Sports Bet Markets
+# 🇨🇭 Swiss Sports Bet Markets
 
 > **Disclaimer:** This project is built for **educational and portfolio purposes only**. It is not intended for commercial use, real-money betting, or any activity that violates the terms of service of the data sources referenced. The scraping code is provided as a technical demonstration of web scraping, data engineering, and microservice architecture patterns.
 
