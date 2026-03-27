@@ -1,10 +1,12 @@
 # Swiss Sports Bet Markets
 
+> **Disclaimer:** This project is built for **educational and portfolio purposes only**. It is not intended for commercial use, real-money betting, or any activity that violates the terms of service of the data sources referenced. The scraping code is provided as a technical demonstration of web scraping, data engineering, and microservice architecture patterns.
+
 A Python microservice application that scrapes real-time football (soccer) betting odds from multiple Swiss bookmakers, matches events across sources using fuzzy string matching, and surfaces cross-bookmaker odds comparisons through a Streamlit dashboard.
 
 ## Project Status
 
-Early-stage prototype. The scraping pipeline, data storage, cross-bookmaker matching, and dashboard are functional. 
+The scraping pipeline, data storage, cross-bookmaker matching, and dashboard are functional. Scrapers run on a configurable interval (`SCRAPE_FREQUENCY_HOURS`). The arbitrage detection engine is not yet implemented.
 
 ## Architecture
 
@@ -226,7 +228,6 @@ The db_service exposes the following:
 
 - Arbitrage detection engine : calculate 1/odds_home_A + 1/odds_draw_B + 1/odds_away_C across all bookmaker permutations to identify guaranteed-profit opportunities
 - Real-time alerts : notify via Telegram or webhook when an arbitrage opportunity is detected
-- Scheduled scraping : run scrapers on a loop or cron interval instead of one-shot execution
 - Additional bookmakers : extend coverage beyond Loro and Swisslos
 - Historical odds tracking : visualize odds movement over time in the dashboard
 - Test suite : add unit and integration tests for the matching logic, scrapers, and API

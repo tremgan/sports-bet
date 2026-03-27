@@ -24,6 +24,9 @@ htmlcov/
 # Database
 *.db
 
+# Logs
+*.log
+
 # Docker Compose local dev override
 docker-compose.override.yaml
 
