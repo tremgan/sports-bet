@@ -3,6 +3,7 @@ from typing import Optional
 import pandas as pd
 
 
+from pydantic import model_validator, validator
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
 
@@ -150,6 +151,14 @@ class SportsBettingOddsBase(SQLModel):
     draw_odds: Optional[float] = None
     team2_odds: float
 
+    @model_validator(mode="after")
+    def implied_probability_sanity_check(self) -> "SportsBettingOddsBase":
+        implied = 1 / self.team1_odds + 1 / self.team2_odds
+        if self.draw_odds:
+            implied += 1 / self.draw_odds
+        if implied < 1.0:
+            raise ValueError(f"implied probability {implied:.3f} is below 1.0: odds look invalid")
+        return self
 
 class SportsBettingOdds(SportsBettingOddsBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
