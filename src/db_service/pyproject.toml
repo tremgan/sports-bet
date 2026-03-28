@@ -28,3 +28,6 @@ core = { path = "../core", editable = true }
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
