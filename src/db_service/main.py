@@ -5,12 +5,16 @@ from core.models import BookmakerMatchCreate, SportsBettingOddsCreate
 from repositories import BettingRepository
 import match_maker
 
-SQLModel.metadata.create_all(engine)
+if engine:
+    SQLModel.metadata.create_all(engine)
 
 app = FastAPI()
 
 
 def get_session():
+    if not engine:
+        raise ValueError("Database engine is not initialized")
+
     with Session(engine) as session:
         yield session
 
