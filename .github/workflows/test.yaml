@@ -40,7 +40,15 @@ jobs:
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
 
+      
+      - name: Install dependencies
+        working-directory: src/${{ matrix.service }}
+        run: uv sync
+
+
       - name: Run tests
         if: steps.check_tests.outputs.has_tests == 'true'
         working-directory: src/${{ matrix.service }}
-        run: uv tool run pytest
+        run: uv run pytest
+
+  
