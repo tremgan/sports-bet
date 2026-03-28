@@ -60,7 +60,7 @@ def collect_messages() -> list[dict]:
         page.goto(
             "https://www.swisslos.ch/de/sporttip/sportwetten/fussball",
             timeout=180_000,  # 3 min page load timeout
-            wait_until="networkidle",
+            wait_until="domcontentloaded",
         )
         time.sleep(60)
         page.close()
@@ -209,9 +209,9 @@ def main():
 
         requests.post(f"{DB_SERVICE_URL}/run_matching/")
 
-    except Exception:
-        logger.exception("scrape error")
-        raise
+    except Exception as e:
+        logger.exception("scrape error: {e}")
+       
 
         
 
@@ -219,8 +219,7 @@ if __name__ == "__main__":
     
     SCRAPE_FREQUENCY_HOURS = int(os.getenv("SCRAPE_FREQUENCY_HOURS", 3))
 
-    if __name__ == "__main__":
-        while True:
-            main()
-            time.sleep(SCRAPE_FREQUENCY_HOURS * 60 * 60)
+    while True:
+        main()
+        time.sleep(SCRAPE_FREQUENCY_HOURS * 60 * 60)
     

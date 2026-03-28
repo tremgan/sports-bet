@@ -99,17 +99,14 @@ def main():
 
         requests.post(f"{DB_SERVICE_URL}/run_matching/")
 
-    except Exception:
-        logger.exception("scrape error")
-        raise
+    except Exception as e:
+        logger.exception(f"scrape error: {e}")
 
 
 if __name__ == "__main__":
 
     SCRAPE_FREQUENCY_HOURS = int(os.getenv("SCRAPE_FREQUENCY_HOURS", 3))
 
-    if __name__ == "__main__":
-        while True:
-            main()
-            time.sleep(SCRAPE_FREQUENCY_HOURS * 60 * 60)
-    
+    while True:
+        main()
+        time.sleep(SCRAPE_FREQUENCY_HOURS * 60 * 60)
