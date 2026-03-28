@@ -53,7 +53,7 @@ def render_matches():
         has_arb = margin < 1.0
         margin_pct = (margin - 1) * 100
 
-        label = f"{'🟢' if has_arb else '🔴'} {match['match_label']} — margin: {margin_pct:.2f}%"
+        label = f"{'🟢' if has_arb else '🔴'} {match['match_label']} (margin: {margin_pct:.2f}%)"
 
         with st.expander(label):
             st.markdown(f"**{fmt_datetime(match['match_datetime'])}**")
