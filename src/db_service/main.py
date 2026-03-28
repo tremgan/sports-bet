@@ -68,6 +68,9 @@ def read_matches_with_odds(repo: BettingRepository = Depends(get_repo)):
 
 
 # one off to clean up any obviously invalid odds entries with implied probability below 1.0
+MIN_ODDS = 1.01
+MAX_ODDS = 50.0
+
 @app.delete("/sports_betting_odds/invalid/")
 def delete_invalid_odds(session: Session = Depends(get_session)):
     odds = session.exec(select(SportsBettingOdds)).all()
@@ -76,7 +79,12 @@ def delete_invalid_odds(session: Session = Depends(get_session)):
         implied = 1 / o.team1_odds + 1 / o.team2_odds
         if o.draw_odds:
             implied += 1 / o.draw_odds
-        if implied < 1.0:
+        out_of_bounds = (
+            not (MIN_ODDS <= o.team1_odds <= MAX_ODDS)
+            or not (MIN_ODDS <= o.team2_odds <= MAX_ODDS)
+            or (o.draw_odds and not (MIN_ODDS <= o.draw_odds <= MAX_ODDS))
+        )
+        if implied < 1.0 or out_of_bounds:
             session.delete(o)
             deleted += 1
     session.commit()
