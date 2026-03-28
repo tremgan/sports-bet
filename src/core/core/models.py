@@ -151,14 +151,26 @@ class SportsBettingOddsBase(SQLModel):
     draw_odds: Optional[float] = None
     team2_odds: float
 
+
+    MIN_ODDS = 1.01
+    MAX_ODDS = 50.0
+
     @model_validator(mode="after")
-    def implied_probability_sanity_check(self) -> "SportsBettingOddsBase":
+    def validate_odds(self) -> "SportsBettingOddsBase":
+        for field, value in [("team1_odds", self.team1_odds), ("team2_odds", self.team2_odds)]:
+            if not (SportsBettingOddsBase.MIN_ODDS <= value <= SportsBettingOddsBase.MAX_ODDS):
+                raise ValueError(f"{field} {value} outside plausible range [{SportsBettingOddsBase.MIN_ODDS}, {SportsBettingOddsBase.MAX_ODDS}]")
+        if self.draw_odds and not (SportsBettingOddsBase.MIN_ODDS <= self.draw_odds <= SportsBettingOddsBase.MAX_ODDS):
+            raise ValueError(f"draw_odds {self.draw_odds} outside plausible range [{SportsBettingOddsBase.MIN_ODDS}, {SportsBettingOddsBase.MAX_ODDS}]")
+    
         implied = 1 / self.team1_odds + 1 / self.team2_odds
         if self.draw_odds:
             implied += 1 / self.draw_odds
         if implied < 1.0:
-            raise ValueError(f"implied probability {implied:.3f} is below 1.0: odds look invalid")
+            raise ValueError(f"implied probability {implied:.3f} is below 1.0 — odds look invalid")
+        
         return self
+
 
 class SportsBettingOdds(SportsBettingOddsBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
