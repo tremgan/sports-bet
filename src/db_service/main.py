@@ -1,10 +1,9 @@
 from fastapi import FastAPI, Depends
 from sqlmodel import SQLModel, Session, select
 from config import engine
-from core.models import BookmakerMatchCreate, SportsBettingOddsCreate
+from core.models import BookmakerMatchCreate, SportsBettingOddsCreate, SportsBettingOdds
 from repositories import BettingRepository
 import match_maker
-from src.core.core.models import SportsBettingOdds
 
 SQLModel.metadata.create_all(engine)
 
