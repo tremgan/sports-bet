@@ -1,5 +1,5 @@
 import os
-
+from pydantic import ValidationError
 import requests
 from datetime import datetime, timezone
 from pathlib import Path
@@ -69,24 +69,35 @@ def get_sports_bets() -> tuple[
                 for outcome in event_json["markets"][0]["outcomes"]
             }
         except (KeyError, IndexError, ValueError) as e:
-            logger.warning(f"could not parse outcomes for {event_json['description']!r}: {e}")
+            logger.warning(
+                f"could not parse outcomes for {event_json['description']!r}: {e}"
+            )
             skipped += 1
             continue
 
-        matches.append(
-            BookmakerMatchCreate(
-                bookmaker=BOOKMAKER,
-                match_label=event_json["description"],
-                match_datetime=match_datetime,
+        try:
+            matches.append(
+                BookmakerMatchCreate(
+                    bookmaker=BOOKMAKER,
+                    match_label=event_json["description"],
+                    match_datetime=match_datetime,
+                )
             )
-        )
-        sports_bets.append(
-            SportsBettingOddsCreate(
-                team1_odds=outcomes[team1],
-                team2_odds=outcomes[team2],
-                draw_odds=outcomes.get("X"),
+            sports_bets.append(
+                SportsBettingOddsCreate(
+                    team1_odds=outcomes[team1],
+                    team2_odds=outcomes[team2],
+                    draw_odds=outcomes.get("X"),
+                )
             )
-        )
+        except ValidationError as e:
+            logger.warning(
+                f"invalid odds for {event_json['description']!r}, skipping: {e}"
+            )
+            if matches and matches[-1].match_label == event_json["description"]:
+                matches.pop()
+            skipped += 1
+            continue
 
     logger.info(f"parsed {len(matches)} matches, skipped {skipped}")
     return matches, sports_bets
@@ -107,7 +118,9 @@ def main():
                 json=match.model_dump(mode="json"),
             )
             if match_response.status_code != 200:
-                logger.error(f"failed to post match {match.match_label!r}: {match_response.text}")
+                logger.error(
+                    f"failed to post match {match.match_label!r}: {match_response.text}"
+                )
                 failed += 1
                 continue
 
@@ -117,7 +130,9 @@ def main():
                 json=odds.model_dump(mode="json"),
             )
             if odds_response.status_code != 200:
-                logger.error(f"failed to post odds for {match.match_label!r}: {odds_response.text}")
+                logger.error(
+                    f"failed to post odds for {match.match_label!r}: {odds_response.text}"
+                )
                 failed += 1
             else:
                 posted += 1
@@ -140,6 +155,5 @@ if __name__ == "__main__":
 
     while True:
         main()
-        next_run = datetime.now().strftime("%H:%M:%S")
         logger.info(f"sleeping {SCRAPE_FREQUENCY_HOURS}h until next run")
         time.sleep(SCRAPE_FREQUENCY_HOURS * 60 * 60)

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import SQLModel, Session
 from config import engine
-from core.models import BookmakerMatchCreate, SportsBettingOddsCreate, SportsBettingOdds
+from core.models import BookmakerMatchCreate, SportsBettingOddsCreate
 from repositories import BettingRepository
 import match_maker
 
@@ -65,5 +65,3 @@ def trigger_matching(repo: BettingRepository = Depends(get_repo)):
 @app.get("/matches/with_odds/")
 def read_matches_with_odds(repo: BettingRepository = Depends(get_repo)):
     return repo.get_matches_with_odds()
-
-

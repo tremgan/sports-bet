@@ -1,5 +1,5 @@
 import os
-
+from pydantic import ValidationError
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timezone
 from pathlib import Path
@@ -174,20 +174,28 @@ def parse_messages(
             skipped += 1
             continue
 
-        matches.append(
-            BookmakerMatchCreate(
-                bookmaker=BOOKMAKER,
-                match_label=match_label,
-                match_datetime=match_datetime,
+     
+
+        try:
+            matches.append(
+                BookmakerMatchCreate(
+                    bookmaker=BOOKMAKER,
+                    match_label=match_label,
+                    match_datetime=match_datetime,
+                )
             )
-        )
-        odds_list.append(
-            SportsBettingOddsCreate(
-                team1_odds=odds_by_type["home"],
-                team2_odds=odds_by_type["away"],
-                draw_odds=odds_by_type.get("draw"),
+            odds_list.append(
+                SportsBettingOddsCreate(
+                    team1_odds=odds_by_type["home"],
+                    team2_odds=odds_by_type["away"],
+                    draw_odds=odds_by_type.get("draw"),
+                )
             )
-        )
+        except ValidationError as e:
+            logger.warning(f"invalid odds for {match_label!r}, skipping: {e}")
+            matches.pop()  # remove the match we just appended
+            skipped += 1
+            continue
 
     logger.info(f"parsed {len(matches)} matches, skipped {skipped}")
     return matches, odds_list

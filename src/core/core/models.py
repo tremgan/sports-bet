@@ -3,14 +3,13 @@ from typing import Optional
 import pandas as pd
 
 
-from pydantic import model_validator, validator
+from pydantic import model_validator
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
 
 class MatchBase(SQLModel):
     """Represents a Match with odds from multiple bookmakers,
     allowing simplified comparisons for identifying arbitrage opportunities."""
-
 
     match_label: str
     match_datetime: datetime
@@ -51,7 +50,7 @@ class MatchBase(SQLModel):
 
     @property
     def implied_probability_df(self) -> pd.DataFrame:
-        return self.odds_df ** -1
+        return self.odds_df**-1
 
     @property
     def min_implied_probabilities(self) -> pd.Series:
@@ -85,7 +84,10 @@ class MatchBase(SQLModel):
     def payout(self) -> float:
         return float(
             (
-                (self.min_implied_probabilities / self.implied_minimal_total_probability)
+                (
+                    self.min_implied_probabilities
+                    / self.implied_minimal_total_probability
+                )
                 * self.max_odds
             ).iloc[0]
         )
@@ -104,8 +106,6 @@ class MatchBase(SQLModel):
             "odds": self.odds_df.to_dict("index"),
             "stakes": self.stakes.to_dict() if self.has_arbitrage else None,
         }
-
-
 
 
 class Match(MatchBase, table=True):
@@ -142,8 +142,11 @@ class BookmakerMatch(BookmakerMatchBase, table=True):
 class BookmakerMatchCreate(BookmakerMatchBase):
     pass
 
+
 MIN_ODDS = 1.01
 MAX_ODDS = 50.0
+
+
 class SportsBettingOddsBase(SQLModel):
     timestamp: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), index=True
@@ -152,23 +155,29 @@ class SportsBettingOddsBase(SQLModel):
     draw_odds: Optional[float] = None
     team2_odds: float
 
-
-    
-
     @model_validator(mode="after")
     def validate_odds(self) -> "SportsBettingOddsBase":
-        for field, value in [("team1_odds", self.team1_odds), ("team2_odds", self.team2_odds)]:
+        for field, value in [
+            ("team1_odds", self.team1_odds),
+            ("team2_odds", self.team2_odds),
+        ]:
             if not (MIN_ODDS <= value <= MAX_ODDS):
-                raise ValueError(f"{field} {value} outside plausible range [{MIN_ODDS}, {MAX_ODDS}]")
+                raise ValueError(
+                    f"{field} {value} outside plausible range [{MIN_ODDS}, {MAX_ODDS}]"
+                )
         if self.draw_odds and not (MIN_ODDS <= self.draw_odds <= MAX_ODDS):
-            raise ValueError(f"draw_odds {self.draw_odds} outside plausible range [{MIN_ODDS}, {MAX_ODDS}]")
-    
+            raise ValueError(
+                f"draw_odds {self.draw_odds} outside plausible range [{MIN_ODDS}, {MAX_ODDS}]"
+            )
+
         implied = 1 / self.team1_odds + 1 / self.team2_odds
         if self.draw_odds:
             implied += 1 / self.draw_odds
         if implied < 1.0:
-            raise ValueError(f"implied probability {implied:.3f} is below 1.0 — odds look invalid")
-        
+            raise ValueError(
+                f"implied probability {implied:.3f} is below 1.0 — odds look invalid"
+            )
+
         return self
 
 

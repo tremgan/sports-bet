@@ -16,7 +16,7 @@ engine = create_engine(
 
 @pytest.fixture(name="session")
 def session_fixture():
-    SQLModel.metadata.drop_all(engine) # avoid leaking state between tests
+    SQLModel.metadata.drop_all(engine)  # avoid leaking state between tests
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
@@ -28,7 +28,9 @@ DATETIME_2 = datetime(2024, 1, 1, 18, 0, 0)
 LABEL = "Team A vs Team B"
 
 
-def make_bookmaker_match(session: Session, label: str, dt: datetime, bookmaker: str = "Loro") -> BookmakerMatch:
+def make_bookmaker_match(
+    session: Session, label: str, dt: datetime, bookmaker: str = "Loro"
+) -> BookmakerMatch:
     bm = BookmakerMatch(match_label=label, match_datetime=dt, bookmaker=bookmaker)
     session.add(bm)
     session.commit()
@@ -51,6 +53,7 @@ def make_match(session: Session, label: str, dt: datetime) -> Match:
 
 # ── find_match ────────────────────────────────────────────────────────────────
 
+
 def test_find_match_exact(session: Session):
     make_match(session, LABEL, DATETIME_1)
     bm = make_bookmaker_match(session, LABEL, DATETIME_1)
@@ -64,7 +67,9 @@ def test_find_match_exact(session: Session):
 
 def test_find_match_fuzzy(session: Session):
     make_match(session, LABEL, DATETIME_1)
-    bm = make_bookmaker_match(session, "Taem B vs Team A", DATETIME_1)  # reversed order and typo
+    bm = make_bookmaker_match(
+        session, "Taem B vs Team A", DATETIME_1
+    )  # reversed order and typo
 
     result = match_maker.find_match(bm, session)
 
@@ -74,6 +79,7 @@ def test_find_match_fuzzy(session: Session):
 
 def test_find_match_within_time_window(session: Session):
     from datetime import timedelta
+
     close_dt = DATETIME_1 + timedelta(minutes=30)
     make_match(session, LABEL, DATETIME_1)
     bm = make_bookmaker_match(session, LABEL, close_dt)
@@ -86,6 +92,7 @@ def test_find_match_within_time_window(session: Session):
 
 def test_find_match_outside_time_window(session: Session):
     from datetime import timedelta
+
     far_dt = DATETIME_1 + timedelta(hours=2)
     make_match(session, LABEL, DATETIME_1)
     bm = make_bookmaker_match(session, LABEL, far_dt)
@@ -114,6 +121,7 @@ def test_find_match_below_fuzzy_threshold(session: Session):
 
 # ── create_match_from_bookmaker_match ─────────────────────────────────────────
 
+
 def test_create_match_from_bookmaker_match():
     bm = BookmakerMatch(
         match_label=LABEL,
@@ -129,6 +137,7 @@ def test_create_match_from_bookmaker_match():
 
 
 # ── run ───────────────────────────────────────────────────────────────────────
+
 
 def test_run_creates_new_match_when_no_existing(session: Session):
     make_bookmaker_match(session, LABEL, DATETIME_1)

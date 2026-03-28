@@ -19,23 +19,33 @@ def compute_margin(bookmaker_odds: dict) -> float:
     best_team1 = max(v["team1_odds"] for v in bookmaker_odds.values())
     best_draw = max(v["draw_odds"] for v in bookmaker_odds.values() if v["draw_odds"])
     best_team2 = max(v["team2_odds"] for v in bookmaker_odds.values())
-    return 1/best_team1 + 1/best_draw + 1/best_team2
+    return 1 / best_team1 + 1 / best_draw + 1 / best_team2
 
 
 def fmt_datetime(dt_str: str, include_time: bool = True) -> str:
-    dt = datetime.fromisoformat(dt_str).replace(tzinfo=timezone.utc).astimezone(LOCAL_TZ)
-    return dt.strftime("%a %d %b %Y, %H:%M") if include_time else dt.strftime("%a %d %b %Y")
+    dt = (
+        datetime.fromisoformat(dt_str).replace(tzinfo=timezone.utc).astimezone(LOCAL_TZ)
+    )
+    return (
+        dt.strftime("%a %d %b %Y, %H:%M")
+        if include_time
+        else dt.strftime("%a %d %b %Y")
+    )
 
 
 def fmt_timestamp(dt_str: str) -> str:
-    dt = datetime.fromisoformat(dt_str).replace(tzinfo=timezone.utc).astimezone(LOCAL_TZ)
+    dt = (
+        datetime.fromisoformat(dt_str).replace(tzinfo=timezone.utc).astimezone(LOCAL_TZ)
+    )
     return dt.strftime("%H:%M %d/%m/%y")
 
 
 def render_matches():
     st.title("🇨🇭 Swiss Sports Bet Dashboard")
     st.markdown("---")
-    st.markdown("Made by [Remi Tregan](https://github.com/tremgan) · [GitHub](https://github.com/tremgan/sports-bet)")
+    st.markdown(
+        "Made by [Remi Tregan](https://github.com/tremgan) · [GitHub](https://github.com/tremgan/sports-bet)"
+    )
 
     data = fetch_matches_with_odds()
 
@@ -66,14 +76,23 @@ def render_matches():
 
             best_odds = {
                 "team1": max(bookmaker_odds.values(), key=lambda v: v["team1_odds"]),
-                "draw": max((v for v in bookmaker_odds.values() if v["draw_odds"]), key=lambda v: v["draw_odds"]),
+                "draw": max(
+                    (v for v in bookmaker_odds.values() if v["draw_odds"]),
+                    key=lambda v: v["draw_odds"],
+                ),
                 "team2": max(bookmaker_odds.values(), key=lambda v: v["team2_odds"]),
             }
             st.markdown("#### Best odds")
-            best_df = pd.DataFrame({
-                "Outcome": ["Team 1", "Draw", "Team 2"],
-                "Best Odds": [best_odds["team1"]["team1_odds"], best_odds["draw"]["draw_odds"], best_odds["team2"]["team2_odds"]],
-            })
+            best_df = pd.DataFrame(
+                {
+                    "Outcome": ["Team 1", "Draw", "Team 2"],
+                    "Best Odds": [
+                        best_odds["team1"]["team1_odds"],
+                        best_odds["draw"]["draw_odds"],
+                        best_odds["team2"]["team2_odds"],
+                    ],
+                }
+            )
             st.dataframe(best_df, use_container_width=True)
 
             if has_arb:

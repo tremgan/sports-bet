@@ -12,7 +12,6 @@ from core.models import (
 
 
 class BettingRepository:
-
     MAX_ODDS_AGE_HOURS = 1
 
     def __init__(self, session: Session):
@@ -60,11 +59,11 @@ class BettingRepository:
         result = []
         for match in matches:
             bookmaker_data = {}
-            
+
             bookmaker_matches = self.session.exec(
                 select(BookmakerMatch).where(BookmakerMatch.match_id == match.id)
             ).all()
-            
+
             for bm in bookmaker_matches:
                 latest_odds = self.session.exec(
                     select(SportsBettingOdds)
@@ -78,15 +77,17 @@ class BettingRepository:
                         "team2_odds": latest_odds.team2_odds,
                         "timestamp": latest_odds.timestamp,
                     }
-            
+
             if not len(bookmaker_data) > 1:
                 continue
 
             max_timestamp = max(v["timestamp"] for v in bookmaker_data.values())
             min_timestamp = min(v["timestamp"] for v in bookmaker_data.values())
-            if not max_timestamp - min_timestamp <= timedelta(hours=BettingRepository.MAX_ODDS_AGE_HOURS):
+            if not max_timestamp - min_timestamp <= timedelta(
+                hours=BettingRepository.MAX_ODDS_AGE_HOURS
+            ):
                 continue
 
             result.append({"match": match, "bookmaker_odds": bookmaker_data})
-            
+
         return result

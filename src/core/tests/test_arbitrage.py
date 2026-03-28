@@ -1,6 +1,4 @@
-
-from core.models import Match, BookmakerMatch, MatchBase, SportsBettingOdds
-from core.models import SportsBettingOdds, BookmakerMatch
+from core.models import Match, BookmakerMatch, SportsBettingOdds
 import pytest
 
 MATCH_LABEL = "Test Match"
@@ -47,8 +45,9 @@ match = Match(
     match_datetime=MATCH_DATETIME,
     bookmaker_matches=bookmaker_matches,
     team1=TEAM_1,
-    team2=TEAM_2
+    team2=TEAM_2,
 )
+
 
 def test_arbitrage_opportunity_match():
     assert len(match.bookmaker_matches) == 2
@@ -64,6 +63,8 @@ def test_arbitrage_opportunity_match():
     assert match.min_implied_probabilities["team2"] == pytest.approx(1 / 5.0)
     assert match.argmin_implied_probabilities["team2"] == "Bookmaker B"
 
-    assert match.implied_minimal_total_probability == pytest.approx(1/2.1 + 1/3.6 + 1/5.0)
+    assert match.implied_minimal_total_probability == pytest.approx(
+        1 / 2.1 + 1 / 3.6 + 1 / 5.0
+    )
     assert match.implied_minimal_total_probability < 1.0
     assert match.has_arbitrage

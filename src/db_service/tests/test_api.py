@@ -16,10 +16,11 @@ engine = create_engine(
 
 @pytest.fixture(name="session")
 def session_fixture():
-    SQLModel.metadata.drop_all(engine) # avoid leaking state between tests
+    SQLModel.metadata.drop_all(engine)  # avoid leaking state between tests
     SQLModel.metadata.create_all(engine)
     with Session(engine) as session:
         yield session
+
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
@@ -33,6 +34,7 @@ def client_fixture(session: Session):
 
 
 # ── root ──────────────────────────────────────────────────────────────────────
+
 
 def test_root(client: TestClient):
     response = client.get("/")
@@ -87,6 +89,7 @@ def test_read_bookmaker_matches(client: TestClient):
 
 # ── sports betting odds ───────────────────────────────────────────────────────
 
+
 def test_create_odds(client: TestClient, session: Session):
     match_response = client.post("/bookmaker_matches/", json=MATCH_DATA)
     match_id = match_response.json()["id"]
@@ -116,15 +119,27 @@ def test_create_odds_bulk(client: TestClient, session: Session):
     match_id = match_response.json()["id"]
 
     odds_list = [
-        {"bookmaker_match_id": match_id, "team1_odds": 1.85, "draw_odds": 3.20, "team2_odds": 4.50},
-        {"bookmaker_match_id": match_id, "team1_odds": 1.90, "draw_odds": 3.10, "team2_odds": 4.20},
+        {
+            "bookmaker_match_id": match_id,
+            "team1_odds": 1.85,
+            "draw_odds": 3.20,
+            "team2_odds": 4.50,
+        },
+        {
+            "bookmaker_match_id": match_id,
+            "team1_odds": 1.90,
+            "draw_odds": 3.10,
+            "team2_odds": 4.20,
+        },
     ]
     response = client.post("/sports_betting_odds/bulk/", json=odds_list)
     assert response.status_code == 200
     assert response.json() == {"created": 2}
 
     db_odds = session.exec(
-        select(SportsBettingOdds).where(SportsBettingOdds.bookmaker_match_id == match_id)
+        select(SportsBettingOdds).where(
+            SportsBettingOdds.bookmaker_match_id == match_id
+        )
     ).all()
     assert len(db_odds) == 2
 
