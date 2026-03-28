@@ -8,6 +8,7 @@ dependencies = [
     "core",
     "pandas>=2.3.3",
     "python-dotenv>=1.2.2",
+    "pytz>=2026.1.post1",
     "requests>=2.32.5",
     "streamlit>=1.55.0",
 ]

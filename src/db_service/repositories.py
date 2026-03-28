@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from core.models import (
@@ -10,6 +12,9 @@ from core.models import (
 
 
 class BettingRepository:
+
+    MAX_ODDS_AGE_HOURS = 1
+
     def __init__(self, session: Session):
         self.session = session
 
@@ -50,6 +55,7 @@ class BettingRepository:
         return self.session.exec(select(SportsBettingOdds)).all()
 
     def get_matches_with_odds(self) -> list[dict]:
+
         matches = self.session.exec(select(Match)).all()
         result = []
         for match in matches:
@@ -73,6 +79,14 @@ class BettingRepository:
                         "timestamp": latest_odds.timestamp,
                     }
             
-            if len(bookmaker_data) > 1:
-                result.append({"match": match, "bookmaker_odds": bookmaker_data})
+            if not len(bookmaker_data) > 1:
+                continue
+
+            max_timestamp = max(v["timestamp"] for v in bookmaker_data.values())
+            min_timestamp = min(v["timestamp"] for v in bookmaker_data.values())
+            if not max_timestamp - min_timestamp <= timedelta(hours=BettingRepository.MAX_ODDS_AGE_HOURS):
+                continue
+
+            result.append({"match": match, "bookmaker_odds": bookmaker_data})
+            
         return result

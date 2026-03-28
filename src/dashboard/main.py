@@ -2,8 +2,11 @@ import streamlit as st
 import requests
 import pandas as pd
 import os
+from datetime import datetime, timezone
+import pytz
 
 DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://localhost:8000")
+LOCAL_TZ = pytz.timezone("Europe/Zurich")
 
 
 def fetch_matches_with_odds() -> list[dict]:
@@ -19,6 +22,16 @@ def compute_margin(bookmaker_odds: dict) -> float:
     return 1/best_team1 + 1/best_draw + 1/best_team2
 
 
+def fmt_datetime(dt_str: str, include_time: bool = True) -> str:
+    dt = datetime.fromisoformat(dt_str).replace(tzinfo=timezone.utc).astimezone(LOCAL_TZ)
+    return dt.strftime("%a %d %b %Y, %H:%M") if include_time else dt.strftime("%a %d %b %Y")
+
+
+def fmt_timestamp(dt_str: str) -> str:
+    dt = datetime.fromisoformat(dt_str).replace(tzinfo=timezone.utc).astimezone(LOCAL_TZ)
+    return dt.strftime("%H:%M %d/%m/%y")
+
+
 def render_matches():
     st.title("🇨🇭 Swiss Sports Bet Dashboard")
     st.markdown("---")
@@ -30,7 +43,6 @@ def render_matches():
         st.info("No matches with odds from multiple bookmakers found.")
         return
 
-    # sort by margin
     data.sort(key=lambda item: compute_margin(item["bookmaker_odds"]))
 
     for item in data:
@@ -44,11 +56,11 @@ def render_matches():
         label = f"{'🟢' if has_arb else '🔴'} {match['match_label']} — margin: {margin_pct:.2f}%"
 
         with st.expander(label):
-            st.markdown(f"**{match['match_datetime']}**")
+            st.markdown(f"**{fmt_datetime(match['match_datetime'])}**")
 
-            # build odds dataframe
             odds_df = pd.DataFrame(bookmaker_odds).T
             odds_df.index.name = "Bookmaker"
+            odds_df["timestamp"] = odds_df["timestamp"].apply(fmt_timestamp)
             st.markdown("#### All bookmaker odds")
             st.dataframe(odds_df, use_container_width=True)
 

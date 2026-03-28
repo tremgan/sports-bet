@@ -154,12 +154,14 @@ name = "core"
 version = "0.1.0"
 source = { editable = "../core" }
 dependencies = [
+    { name = "pandas" },
     { name = "pytest" },
     { name = "sqlmodel" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "pandas", specifier = ">=1.4.0,<3" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "sqlmodel", specifier = ">=0.0.37" },
 ]
@@ -172,6 +174,7 @@ dependencies = [
     { name = "core" },
     { name = "pandas" },
     { name = "python-dotenv" },
+    { name = "pytz" },
     { name = "requests" },
     { name = "streamlit" },
 ]
@@ -181,6 +184,7 @@ requires-dist = [
     { name = "core", editable = "../core" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "pytz", specifier = ">=2026.1.post1" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "streamlit", specifier = ">=1.55.0" },
 ]
