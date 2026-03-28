@@ -11,6 +11,7 @@ on:
       - 'src/**'
 
   workflow_dispatch:
+  workflow_call: # allows this workflow to be called from deploy
 
 jobs:
   test:
