@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Depends
-from sqlmodel import SQLModel, Session
+from sqlmodel import SQLModel, Session, select
 from config import engine
 from core.models import BookmakerMatchCreate, SportsBettingOddsCreate
 from repositories import BettingRepository
 import match_maker
+from src.core.core.models import SportsBettingOdds
 
 SQLModel.metadata.create_all(engine)
 
@@ -65,3 +66,19 @@ def trigger_matching(repo: BettingRepository = Depends(get_repo)):
 @app.get("/matches/with_odds/")
 def read_matches_with_odds(repo: BettingRepository = Depends(get_repo)):
     return repo.get_matches_with_odds()
+
+
+# one off to clean up any obviously invalid odds entries with implied probability below 1.0
+@app.delete("/sports_betting_odds/invalid/")
+def delete_invalid_odds(session: Session = Depends(get_session)):
+    odds = session.exec(select(SportsBettingOdds)).all()
+    deleted = 0
+    for o in odds:
+        implied = 1 / o.team1_odds + 1 / o.team2_odds
+        if o.draw_odds:
+            implied += 1 / o.draw_odds
+        if implied < 1.0:
+            session.delete(o)
+            deleted += 1
+    session.commit()
+    return {"deleted": deleted}
