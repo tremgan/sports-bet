@@ -142,7 +142,8 @@ class BookmakerMatch(BookmakerMatchBase, table=True):
 class BookmakerMatchCreate(BookmakerMatchBase):
     pass
 
-
+MIN_ODDS = 1.01
+MAX_ODDS = 50.0
 class SportsBettingOddsBase(SQLModel):
     timestamp: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), index=True
@@ -152,16 +153,15 @@ class SportsBettingOddsBase(SQLModel):
     team2_odds: float
 
 
-    MIN_ODDS = 1.01
-    MAX_ODDS = 50.0
+    
 
     @model_validator(mode="after")
     def validate_odds(self) -> "SportsBettingOddsBase":
         for field, value in [("team1_odds", self.team1_odds), ("team2_odds", self.team2_odds)]:
-            if not (SportsBettingOddsBase.MIN_ODDS <= value <= SportsBettingOddsBase.MAX_ODDS):
-                raise ValueError(f"{field} {value} outside plausible range [{SportsBettingOddsBase.MIN_ODDS}, {SportsBettingOddsBase.MAX_ODDS}]")
-        if self.draw_odds and not (SportsBettingOddsBase.MIN_ODDS <= self.draw_odds <= SportsBettingOddsBase.MAX_ODDS):
-            raise ValueError(f"draw_odds {self.draw_odds} outside plausible range [{SportsBettingOddsBase.MIN_ODDS}, {SportsBettingOddsBase.MAX_ODDS}]")
+            if not (MIN_ODDS <= value <= MAX_ODDS):
+                raise ValueError(f"{field} {value} outside plausible range [{MIN_ODDS}, {MAX_ODDS}]")
+        if self.draw_odds and not (MIN_ODDS <= self.draw_odds <= MAX_ODDS):
+            raise ValueError(f"draw_odds {self.draw_odds} outside plausible range [{MIN_ODDS}, {MAX_ODDS}]")
     
         implied = 1 / self.team1_odds + 1 / self.team2_odds
         if self.draw_odds:
