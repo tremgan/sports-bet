@@ -1,0 +1,44 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+  pull_request:
+    paths:
+      - 'src/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - core
+          - db_service
+          - loro_scrape_service
+          - swisslos_scrape_service
+          - dashboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Check for tests folder
+        id: check_tests
+        run: |
+          if [ -d "src/${{ matrix.service }}/tests" ]; then
+            echo "has_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_tests=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        if: steps.check_tests.outputs.has_tests == 'true'
+        working-directory: src/${{ matrix.service }}
+        run: uv tool run pytest

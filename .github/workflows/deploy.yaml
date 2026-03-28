@@ -1,3 +1,6 @@
+# test.yaml — no changes needed to triggers
+
+# deploy.yaml
 name: Deploy
 
 on:
@@ -5,12 +8,15 @@ on:
     branches:
       - main
     paths:
-        - 'src/**'
-
+      - 'src/**'
   workflow_dispatch:
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to VPS
